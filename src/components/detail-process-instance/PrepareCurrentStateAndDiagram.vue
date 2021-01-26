@@ -77,18 +77,13 @@ export default {
       currentProcessActivityToShowArray: []
     };
   },
-  computed: {
-    expertMode() {
-      return this.$store.state.expertMode;
-    }
-  },
 
   mounted() {
     this.loadData();
   },
   methods: {
     checkButtons: function (index) {
-      if (index == 0 && this.expertMode == true) {
+      if (index == 0) {
         return true;
       } else return false;
     },
@@ -161,6 +156,13 @@ export default {
         .get("/history/process-instance/" + this.processInstanceId)
         .then(response => {
           this.processDefinition = response.data.processDefinitionId;
+        })
+        .catch(() => {
+          this.$api()
+          .get("/process-instance/" + this.processInstanceId)
+          .then(response => {
+            this.processDefinition = response.data.definitionId;
+          })
         });
     },
     calculateWaitAndActivity() {

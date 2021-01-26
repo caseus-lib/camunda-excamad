@@ -80,6 +80,7 @@ import Vue from "vue";
 import axios from "axios";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faArrowsAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
+import _orderBy from "lodash/orderBy";
 library.add(faArrowsAlt);
 library.add(faEdit);
 Vue.use(fullscreen);
@@ -158,7 +159,7 @@ export default {
       });
     },
 
-    changeExpertMode() {
+    changeEditMode() {
       this.wasBuiled = false;
       this.editMode = !this.editMode;
       this.componentKey = this.componentKey + 1;
@@ -357,7 +358,7 @@ export default {
       this.elementRegistryVue = elementRegistry;
       canvas.zoom("fit-viewport");
 
-      this.activityHistory.forEach(activity => {
+      _orderBy(this.activityHistory, (activity) => activity.activityType !== "subProcess").forEach(activity => {
         try {
           if (!activity.activityId.includes("#multiInstanceBody")) {
             var shape = elementRegistry.get(activity.activityId);
@@ -371,7 +372,11 @@ export default {
                 html: '<div class="timer"> ' + activity.endTime + "</div"
               });
             }
-            var $overlayHtml = $('<div class="highlight-overlay">').css({
+
+            let $highlightType = activity.activityType === "subProcess" || activity.activityType === "adHocSubProcess"
+                ? 'highlight-overlay-light'
+                : 'highlight-overlay'
+            let $overlayHtml = $('<div class="' + $highlightType + '">').css({
               width: shape.width,
               height: shape.height
             });
@@ -385,7 +390,7 @@ export default {
           }
           if (activity.activityType == "callActivity") {
             var baseurl =
-              process.env.NODE_ENV === "production" ? "/camunda-excamad/" : "/";
+              process.env.NODE_ENV === "production" ? "/" : "/";
             var url =
               baseurl + "#/processdetail/" + activity.calledProcessInstanceId;
             var htmllink =
@@ -613,12 +618,21 @@ body,
 .buttons a.active {
   opacity: 1;
 }
+
 .highlight-overlay {
   background-color: #15b427; /* color elements as green */
   opacity: 0.5;
   border-radius: 13px;
   pointer-events: none; /* no pointer events, allows clicking through onto the element */
 }
+
+.highlight-overlay-light {
+  background-color: #15b427; /* color border as green */
+  opacity: 0.1;
+  border-radius: 13px;
+  pointer-events: none; /* no pointer events, allows clicking through onto the element */
+}
+
 .highlight-migration-select-overlay {
   background-color: rgb(255, 116, 0); /* color elements as green */
   opacity: 0.5;
